@@ -20,9 +20,8 @@ $counter=0;
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <meta name="description" content="">
     <meta name="author" content="Steve Klicek" >
-    <link rel="shortcut icon" href="../images/bm.ico">
-	
-    <title>BEST WEB OFFICE</title>
+    	
+    <title>KALENDER</title>
 
     <!-- Bootstrap core CSS -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
