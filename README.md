@@ -1,2 +1,2 @@
 # terminplaner
-Terminplaner für die Webseite
+Terminplaner und Termin-Anfragesystem für die Webseite
