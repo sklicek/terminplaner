@@ -45,16 +45,18 @@ $arrMonth = array(
     <meta name="author" content="Steve Klicek" >
     <link rel="shortcut icon" href="images/favicon.jpg">
 	
-    <title>KALENDER</title>
+    <title>KONFIGURATION</title>
 
     <!-- Bootstrap core CSS -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
 <div class="container">
-<h1><?php echo $arrMonth[date('F',$date)];?> <?php echo date('Y',$date); ?></h1>
+<h1><?php echo $arrMonth[date('F',$date)];?> <?php echo date('Y',$date); ?>
+&nbsp;&nbsp;&nbsp;
+<small>Konfiguration</small></h1>
 <p>
-  <a href="konfiguration.php" class="btn btn-success btn-sm">Konfiguration</a>
+  <a href="kalender.php" class="btn btn-success btn-sm">Kalender</a>
   <a href="?timestamp=<?php echo monthBack($date); ?>" class="btn btn-info btn-sm" ><-</a>
   <a href="?timestamp=<?php echo monthForward($date); ?>" class="btn btn-info btn-sm">-></a>
   <a class="btn btn-primary btn-sm" href="<?php echo $_SERVER["PHP_SELF"];?>">Heute</a>
@@ -87,7 +89,7 @@ for( $i = 1; $i <= $sum_days; $i++ ) {
   $counter++;
   $std_display="0 Anfragen";
   ?>
-  <td><a href="#"><?=sprintf("%02d",$i);?></a><br><span class="badge bg-secondary"><?=$std_display;?></span></td>
+  <td><a href="#"><?=sprintf("%02d",$i);?></a></td>
   <?php
   if ($counter%7==0){
     ?>
