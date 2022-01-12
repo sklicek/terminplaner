@@ -57,6 +57,7 @@ $arrMonth = array(
   <a href="#" class="btn btn-success btn-sm">Konfiguration</a>
   <a href="?timestamp=<?php echo monthBack($date); ?>" class="btn btn-info btn-sm" ><-</a>
   <a href="?timestamp=<?php echo monthForward($date); ?>" class="btn btn-info btn-sm">-></a>
+  <a class="btn btn-primary btn-sm" href="<?php echo $_SERVER["PHP_SELF"];?>">Heute</a>
 </p>
 <table class="table table-bordered">
 <tr>
