@@ -2,15 +2,38 @@
 $cur_month=date("n");
 $cur_year=date("Y");
 
-$arr_month=array("Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember");
 $headline = array('Mon','Die','Mit','Don','Fre','Sam','Son');
 
 //current date
 $date = time();
+if( isset($_REQUEST['timestamp'])) $date = $_REQUEST['timestamp'];
+
 $sum_days = date('t',$date);
 $LastMonthSum = date('t',mktime(0,0,0,(date('m',$date)-1),0,date('Y',$date)));
 $mo=date("m",$date);
 $counter=0;
+
+function monthBack( $timestamp ){
+  return mktime(0,0,0, date("m",$timestamp)-1,date("d",$timestamp),date("Y",$timestamp) );
+}
+function monthForward( $timestamp ){
+  return mktime(0,0,0, date("m",$timestamp)+1,date("d",$timestamp),date("Y",$timestamp) );
+}
+
+$arrMonth = array(
+  "January" => "Januar",
+  "February" => "Februar",
+  "March" => "M&auml;rz",
+  "April" => "April",
+  "May" => "Mai",
+  "June" => "Juni",
+  "July" => "Juli",
+  "August" => "August",
+  "September" => "September",
+  "October" => "Oktober",
+  "November" => "November",
+  "December" => "Dezember"
+  );
 ?>
 <!DOCTYPE html>
 <html lang="de">
@@ -20,7 +43,8 @@ $counter=0;
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <meta name="description" content="">
     <meta name="author" content="Steve Klicek" >
-    	
+    <link rel="shortcut icon" href="../images/bm.ico">
+	
     <title>KALENDER</title>
 
     <!-- Bootstrap core CSS -->
@@ -28,7 +52,12 @@ $counter=0;
 </head>
 <body>
 <div class="container">
-<h1><?=$arr_month[$cur_month-1].' '.$cur_year;?></h1>
+<h1><?php echo $arrMonth[date('F',$date)];?> <?php echo date('Y',$date); ?></h1>
+<p>
+  <a href="#" class="btn btn-success btn-sm">Konfiguration</a>
+  <a href="?timestamp=<?php echo monthBack($date); ?>" class="btn btn-info btn-sm" ><-</a>
+  <a href="?timestamp=<?php echo monthForward($date); ?>" class="btn btn-info btn-sm">-></a>
+</p>
 <table class="table table-bordered">
 <tr>
 <?php
@@ -55,8 +84,10 @@ for( $i = 1; $i <= $sum_days; $i++ ) {
 	}
   //aktueller Monat
   $counter++;
-  $std_display="0:00h";
-  echo "<td>".sprintf("%02d",$i)."<br>".$std_display."</td>";
+  $std_display="0 Anfragen";
+  ?>
+  <td><a href=""><?=sprintf("%02d",$i);?></a><br><span class="badge bg-secondary"><?=$std_display;?></span></td>
+  <?php
   if ($counter%7==0){
     ?>
     </tr><tr>
