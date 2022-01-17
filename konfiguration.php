@@ -1,4 +1,8 @@
 <?php
+/* DB und CONFIG einbinden */
+@require_once ("include/connect_db.php");
+@require_once ("include/config.inc.php");
+
 $cur_month=date("n");
 $cur_year=date("Y");
 
@@ -34,6 +38,91 @@ $arrMonth = array(
   "November" => "November",
   "December" => "Dezember"
   );
+
+//Sprechstunden zu aktuellen Monat lesen
+$arr_sprechstunden=array();
+$a=0;
+if ($stmt = $mysqli -> prepare("SELECT id, anfang, ende, datum FROM tblSprechstunden where month(datum) = ? AND year(datum) = ? ORDER BY datum, anfang")) {
+  $stmt -> bind_param('ii',$cur_month,$cur_year);
+  $stmt -> execute();
+  $stmt -> bind_result($id, $startzeit, $endzeit, $datum);
+  while ($stmt -> fetch()) {
+    $arr_sprechstunden[$a][0]=$id;
+    $arr_sprechstunden[$a][1]=date("H:i",strtotime($startzeit));
+    $arr_sprechstunden[$a][2]=date("H:i",strtotime($endzeit));
+    $arr_sprechstunden[$a][3]=$datum;
+    $a++;
+  }
+  $stmt->close();
+}
+
+//***************************
+//daten speichern
+//****************************/
+  $msg="";
+  if (isset($_POST['submit'])){
+    $startzeit=$_POST['startzeit'];
+    $endzeit=$_POST['endzeit'];
+    $datum=date("Y-m-d",strtotime($_POST['datum']));
+
+    if ($startzeit && $endzeit && $datum){
+      //neu eintragen
+      if ($stmt = $mysqli -> prepare("INSERT INTO tblSprechstunden (datum, anfang, ende) " .
+      " VALUES (?, ?, ?)")) {
+          $stmt -> bind_param("sss", $datum,$startzeit,$endzeit);
+          if($stmt -> execute()) {
+          } else {
+              $msg="Fehler beim Speichern.";
+          }
+          $stmt->close();
+          ?>
+          <script>
+            if ('<?=$msg?>') {
+              alert('<?=$msg;?>');
+            }
+            window.location.href="konfiguration.php";
+          </script>
+          <?php
+          exit;
+      }
+    }
+  }
+
+//***************************
+//daten entfernen
+//****************************/
+$msg="";
+if (isset($_GET['id']) && $_GET['id']){
+    if ($stmt = $mysqli -> prepare("DELETE FROM tblSprechstunden WHERE id = ? ")) {
+        $stmt -> bind_param("i", $_GET['id']);
+        if($stmt -> execute()) {
+        
+        } else {
+            $msg="Fehler beim Entfernen.";
+        }
+        $stmt->close();
+        ?>
+        <script>
+          if ('<?=$msg?>') {
+            alert('<?=$msg;?>');
+          }
+          window.location.href="konfiguration.php";
+        </script>
+        <?php
+        exit;
+    }
+  
+}
+
+function get_anz_termine($startzeit='00:00',$endzeit='00:00',$raster_mins=RASTER){
+  $anz=0;
+  $startz=strtotime($startzeit); 
+  $endz=strtotime($endzeit); 
+  if ($startz>0 && $endz>0){
+    $anz=(($endz-$startz)/60)/$raster_mins;
+  }
+  return $anz;
+}
 ?>
 <!DOCTYPE html>
 <html lang="de">
@@ -51,15 +140,18 @@ $arrMonth = array(
     <link href="css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
+<?php include("menue.php");?>
 <div class="container">
 <h1><?php echo $arrMonth[date('F',$date)];?> <?php echo date('Y',$date); ?>
 &nbsp;&nbsp;&nbsp;
-<small>Konfiguration</small></h1>
+<small>Sprechstunden-Konfiguration</small></h1>
 <p>
-  <a href="kalender.php" class="btn btn-success btn-sm">Kalender</a>
   <a href="?timestamp=<?php echo monthBack($date); ?>" class="btn btn-info btn-sm" ><-</a>
   <a href="?timestamp=<?php echo monthForward($date); ?>" class="btn btn-info btn-sm">-></a>
   <a class="btn btn-primary btn-sm" href="<?php echo $_SERVER["PHP_SELF"];?>">Heute</a>
+  <div style="float: right;">
+    <i>Einteilung: <?=RASTER;?> Minuten</i>
+  </div>
 </p>
 <table class="table table-bordered">
 <tr>
@@ -71,6 +163,8 @@ foreach( $headline as $key => $value ) {
 </tr>
 <tr>
 <?php
+$heute=date("d.m.Y",strtotime('now'));
+
 for( $i = 1; $i <= $sum_days; $i++ ) {
   $day_name = date('D',mktime(0,0,0,date('m',$date),$i,date('Y',$date)));
 	$day_number = date('w',mktime(0,0,0,date('m',$date),$i,date('Y',$date)));
@@ -87,14 +181,46 @@ for( $i = 1; $i <= $sum_days; $i++ ) {
 	}
   //aktueller Monat
   $counter++;
-  $std_display="0 Anfragen";
-  ?>
-  <td>
-      <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#BearbeitenModal" data-bs-datum="<?=$d;?>">
-        <?=sprintf("%02d",$i);?>
-      </button>
-  </td>
-  <?php
+  if (strtotime($d)>=strtotime($heute)){
+    ?>
+    <td>
+        <h3><?=sprintf("%02d",$i);?>
+        <div style="float:right">
+          <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#BearbeitenModal" data-bs-datum="<?=$d;?>">
+            <img src="css/icons/pencil.svg" alt="Hinzufuegen">
+          </button>
+        </div>
+        </h3>
+        <ul class="list-group">
+        <?php
+          //sprechstunden lesen
+          for ($a=0;$a<count($arr_sprechstunden);$a++){
+            if (strtotime($arr_sprechstunden[$a][3])==strtotime($d)){
+              $lst_id=$arr_sprechstunden[$a][0];
+              $lst_startzeit=$arr_sprechstunden[$a][1];
+              $lst_endzeit=$arr_sprechstunden[$a][2];
+
+              $max_termine=get_anz_termine($lst_startzeit,$lst_endzeit,RASTER);
+              ?>
+              <li class="list-group-item"><?=$lst_startzeit.' - '.$lst_endzeit;?>
+              <span class="badge bg-secondary"><?=$max_termine;?> Termine max.</span>
+              <div style="float:right">
+                <a href="?id=<?=$lst_id;?>" title="Entfernen" onclick="return confirm('Diese Sprechzeiten wirklich entfernen?');"><img src="css/icons/trash.svg" alt="Entfernen"></a>
+              </div>
+              </li> 
+              <?php
+            }
+          }
+        ?>
+        </ul>
+    </td>
+    <?php
+  } else {
+    ?>
+    <td><h3><?=sprintf("%02d",$i);?></h3></td>
+    <?php
+  }
+  
   if ($counter%7==0){
     ?>
     </tr><tr>
@@ -110,20 +236,23 @@ for( $i = 1; $i <= $sum_days; $i++ ) {
 <div class="modal fade" id="BearbeitenModal" tabindex="-1" aria-labelledby="BearbeitenModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="BearbeitenModalLabel">Bearbeiten</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schliessen"></button>
-      </div>
-      <div class="modal-body">
-        <label>Startzeit</label>
-        <input type="date" id="startzeit" disabled> 
-        <label>Endzeit</label>
-        <input type="date" id="endzeit" disabled> 
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Schliessen</button>
-        <button type="button" class="btn btn-primary">Speichern</button>
-      </div>
+      <form method="post">
+        <input type="hidden" name="datum" id="datum">
+        <div class="modal-header">
+          <h5 class="modal-title" id="BearbeitenModalLabel">Bearbeiten</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schliessen"></button>
+        </div>
+        <div class="modal-body">
+          <label>Startzeit</label>
+          <input type="time" name="startzeit" id="startzeit" class="form-control" required> 
+          <label>Endzeit</label>
+          <input type="time" name="endzeit" id="endzeit" class="form-control" required> 
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Schliessen</button>
+          <input type="submit" name="submit" class="btn btn-primary" value="Speichern" />
+        </div>
+      </form>
     </div>
   </div>
 </div>
@@ -138,6 +267,7 @@ for( $i = 1; $i <= $sum_days; $i++ ) {
         // Extract value from the custom data-* attribute
         var titleData = button.getAttribute("data-bs-datum");
         myModal.querySelector(".modal-title").innerText = "Bearbeiten vom " + titleData;
+        document.getElementById('datum').value = titleData;
     });
 
 </script>

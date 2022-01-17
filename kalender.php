@@ -51,12 +51,15 @@ $arrMonth = array(
     <link href="css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
+
+<?php include("menue.php");?>
+
 <div class="container">
+
 <h1><?php echo $arrMonth[date('F',$date)];?> <?php echo date('Y',$date); ?></h1>
 <p>
-  <a href="konfiguration.php" class="btn btn-success btn-sm">Konfiguration</a>
-  <a href="?timestamp=<?php echo monthBack($date); ?>" class="btn btn-info btn-sm" ><-</a>
-  <a href="?timestamp=<?php echo monthForward($date); ?>" class="btn btn-info btn-sm">-></a>
+  <a href="?timestamp=<?php echo monthBack($date); ?>" class="btn btn-info btn-sm" ><<</a>
+  <a href="?timestamp=<?php echo monthForward($date); ?>" class="btn btn-info btn-sm">>></a>
   <a class="btn btn-primary btn-sm" href="<?php echo $_SERVER["PHP_SELF"];?>">Heute</a>
 </p>
 <table class="table table-bordered">
@@ -99,5 +102,6 @@ for( $i = 1; $i <= $sum_days; $i++ ) {
 </tr>
 </table>
 </div>
+<script src="js/bootstrap.min.js"></script>
 </body>
 </html>  
