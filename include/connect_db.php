@@ -3,7 +3,7 @@
 $hostname="localhost";
 $database="terminplaner";
 $username="root";
-$password="ste414#$";
+$password="<PASSWORD>";
 $port="3306";
 
 //DO NOT EDIT BELOW THIS LINE
