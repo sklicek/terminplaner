@@ -64,6 +64,16 @@ if ($stmt = $mysqli -> prepare("SELECT id, anfang, ende, datum FROM tblSprechstu
     $startzeit=$_POST['startzeit'];
     $endzeit=$_POST['endzeit'];
     $datum=date("Y-m-d",strtotime($_POST['datum']));
+    
+    if (strtotime($endzeit)<=strtotime($startzeit)){
+      ?>
+      <script>
+          alert('Die Endzeit darf nicht vor der Startzeit liegen!');
+          window.location.href="konfiguration.php";
+      </script>
+      <?php
+      exit;
+    }
 
     if ($startzeit && $endzeit && $datum){
       //neu eintragen
