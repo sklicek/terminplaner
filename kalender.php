@@ -72,6 +72,8 @@ foreach( $headline as $key => $value ) {
 </tr>
 <tr>
 <?php
+$heute=date("d.m.Y",strtotime('now'));
+
 for( $i = 1; $i <= $sum_days; $i++ ) {
   $day_name = date('D',mktime(0,0,0,date('m',$date),$i,date('Y',$date)));
 	$day_number = date('w',mktime(0,0,0,date('m',$date),$i,date('Y',$date)));
@@ -89,9 +91,26 @@ for( $i = 1; $i <= $sum_days; $i++ ) {
   //aktueller Monat
   $counter++;
   $std_display="0 Anfragen";
+  
+  if (strtotime($d)>=strtotime($heute)){
   ?>
-  <td><a href="#"><?=sprintf("%02d",$i);?></a><br><span class="badge bg-secondary"><?=$std_display;?></span></td>
+  <td>
+  	<?=sprintf("%02d",$i);?>
+  	<div style="float:right">
+	   <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#BearbeitenModal" data-bs-datum="<?=$d;?>">
+             <img src="css/icons/pencil.svg" alt="Hinzufuegen">
+           </button>
+        </div>   
+  	<br><span class="badge bg-secondary"><?=$std_display;?></span>
+  </td>
   <?php
+  } else {
+  ?>
+  <td>
+  	<?=sprintf("%02d",$i);?>
+  	</td>
+  	<?php
+  }
   if ($counter%7==0){
     ?>
     </tr><tr>
@@ -102,6 +121,43 @@ for( $i = 1; $i <= $sum_days; $i++ ) {
 </tr>
 </table>
 </div>
+
+<!-- Modal -->
+<div class="modal fade" id="BearbeitenModal" tabindex="-1" aria-labelledby="BearbeitenModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post">
+        <input type="hidden" name="datum" id="datum">
+        <div class="modal-header">
+          <h5 class="modal-title" id="BearbeitenModalLabel">Bearbeiten</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schliessen"></button>
+        </div>
+        <div class="modal-body">
+          <label>Uhrzeit</label>
+          <input type="time" name="startzeit" id="startzeit" class="form-control" required> 
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Schliessen</button>
+          <input type="submit" name="submit" class="btn btn-primary" value="Speichern" />
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Bootstrap Javascript -->
 <script src="js/bootstrap.min.js"></script>
+<script>
+    var myModal = document.getElementById('BearbeitenModal');
+    myModal.addEventListener('show.bs.modal', function (event) {
+        // Get the button that triggered the modal
+        var button = event.relatedTarget;
+        // Extract value from the custom data-* attribute
+        var titleData = button.getAttribute("data-bs-datum");
+        myModal.querySelector(".modal-title").innerText = "Terminanfrage am " + titleData;
+        document.getElementById('datum').value = titleData;
+    });
+
+</script>
 </body>
 </html>  
