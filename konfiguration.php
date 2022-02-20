@@ -76,16 +76,39 @@ if ($stmt = $mysqli -> prepare("SELECT id, anfang, ende, datum FROM tblSprechstu
     }
 
     if ($startzeit && $endzeit && $datum){
+      //pruefen ob bereits vorhanden
+      $vorhanden=0;
+      if ($stmt = $mysqli -> prepare("SELECT id FROM tblSprechstunden WHERE datum = ? AND ende > ?")) {
+          $stmt -> bind_param("ss", $datum,$startzeit);
+          $stmt -> execute();
+          $stmt -> bind_result($vorhanden);
+          $stmt -> fetch();
+          $stmt -> close();
+	}      
+    
       //neu eintragen
-      if ($stmt = $mysqli -> prepare("INSERT INTO tblSprechstunden (datum, anfang, ende) " .
-      " VALUES (?, ?, ?)")) {
-          $stmt -> bind_param("sss", $datum,$startzeit,$endzeit);
-          if($stmt -> execute()) {
-          } else {
-              $msg="Fehler beim Speichern.";
-          }
-          $stmt->close();
-          ?>
+      if ($vorhanden==0){
+	      if ($stmt = $mysqli -> prepare("INSERT INTO tblSprechstunden (datum, anfang, ende) " .
+	      " VALUES (?, ?, ?)")) {
+		  $stmt -> bind_param("sss", $datum,$startzeit,$endzeit);
+		  if($stmt -> execute()) {
+		  } else {
+		      $msg="Fehler beim Speichern.";
+		  }
+		  $stmt->close();
+		  ?>
+		  <script>
+		    if ('<?=$msg?>') {
+		      alert('<?=$msg;?>');
+		    }
+		    window.location.href="konfiguration.php";
+		  </script>
+		  <?php
+		  exit;
+	      }
+      } else {
+	 $msg="Info: Es besteht bereits ein Eintrag.";
+         ?>
           <script>
             if ('<?=$msg?>') {
               alert('<?=$msg;?>');
