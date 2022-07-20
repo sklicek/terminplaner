@@ -1,7 +1,7 @@
 <?php
 /* DB und CONFIG einbinden */
-@require_once ("include/connect_db.php");
-@require_once ("include/config.inc.php");
+require_once ("include/connect_db.php");
+require ("include/config.inc.php");
 
 $cur_month=date("n");
 $cur_year=date("Y");
@@ -22,6 +22,15 @@ function monthBack( $timestamp ){
 }
 function monthForward( $timestamp ){
   return mktime(0,0,0, date("m",$timestamp)+1,date("d",$timestamp),date("Y",$timestamp) );
+}
+function get_anz_termine($startzeit='00:00',$endzeit='00:00',$raster_mins=15){
+  $anz=0;
+  $startz=strtotime($startzeit); 
+  $endz=strtotime($endzeit); 
+  if ($startz>0 && $endz>0){
+    $anz=(($endz-$startz)/60)/$raster_mins;
+  }
+  return $anz;
 }
 
 $arrMonth = array(
@@ -78,13 +87,14 @@ if ($stmt = $mysqli -> prepare("SELECT id, anfang, ende, datum FROM tblSprechstu
     if ($startzeit && $endzeit && $datum){
       //pruefen ob bereits vorhanden
       $vorhanden=0;
+        
       if ($stmt = $mysqli -> prepare("SELECT id FROM tblSprechstunden WHERE datum = ? AND ende > ?")) {
           $stmt -> bind_param("ss", $datum,$startzeit);
           $stmt -> execute();
           $stmt -> bind_result($vorhanden);
           $stmt -> fetch();
           $stmt -> close();
-	}      
+	   }      
     
       //neu eintragen
       if ($vorhanden==0){
@@ -96,23 +106,68 @@ if ($stmt = $mysqli -> prepare("SELECT id, anfang, ende, datum FROM tblSprechstu
 		      $msg="Fehler beim Speichern.";
 		  }
 		  $stmt->close();
+		  
+		  if ($stmt = $mysqli -> prepare("SELECT LAST_INSERT_ID() FROM tblSprechstunden")) {
+          	$stmt -> execute();
+          	$stmt -> bind_result($vorhanden);
+          	$stmt -> fetch();
+            $stmt -> close();
+        }
 		  ?>
 		  <script>
 		    if ('<?=$msg?>') {
 		      alert('<?=$msg;?>');
 		    }
-		    window.location.href="konfiguration.php";
+		    /*window.location.href="konfiguration.php";*/
 		  </script>
 		  <?php
-		  exit;
+		  //exit;
 	      }
       } else {
-	 $msg="Info: Es besteht bereits ein Eintrag.";
+	 		  $msg="Info: Es besteht bereits ein Eintrag.";
          ?>
           <script>
             if ('<?=$msg?>') {
               alert('<?=$msg;?>');
             }
+            /*window.location.href="konfiguration.php";*/
+          </script>
+          <?php
+          //exit;
+      }
+
+      $id_details=0;
+      if ($vorhanden>0){
+      	//details generieren wenn noch nicht vorhanden
+      	if ($stmt = $mysqli -> prepare("SELECT id_details FROM tblSprechstundenDetails WHERE id_termin = ?")) {
+          $stmt -> bind_param("i", $vorhanden);
+          $stmt -> execute();
+          $stmt -> bind_result($id_details);
+          $stmt -> fetch();
+          $stmt -> close();
+	   	  }
+        //var_dump($id_details);
+	   	
+        if ($id_details==0){
+          //keine details vorhanden: erstellen
+          $anz_termine=get_anz_termine($startzeit,$endzeit,RASTER);
+          if ($anz_termine>0){
+            for ($x=0;$x<$anz_termine;$x++){
+              if ($stmt = $mysqli -> prepare("INSERT INTO tblSprechstundenDetails (id_termin) VALUES (?)")) {
+                  $stmt -> bind_param("i", $vorhanden);
+                  if($stmt -> execute()) {
+                  } else {
+                    $msg="Fehler beim Speichern.";
+                  }
+                  $stmt->close();
+              }
+            }	   				
+          }
+        } else {
+          //details bestehen bereits
+        }
+        ?>
+          <script>
             window.location.href="konfiguration.php";
           </script>
           <?php
@@ -147,15 +202,7 @@ if (isset($_GET['id']) && $_GET['id']){
   
 }
 
-function get_anz_termine($startzeit='00:00',$endzeit='00:00',$raster_mins=RASTER){
-  $anz=0;
-  $startz=strtotime($startzeit); 
-  $endz=strtotime($endzeit); 
-  if ($startz>0 && $endz>0){
-    $anz=(($endz-$startz)/60)/$raster_mins;
-  }
-  return $anz;
-}
+
 ?>
 <!DOCTYPE html>
 <html lang="de">
@@ -215,8 +262,16 @@ for( $i = 1; $i <= $sum_days; $i++ ) {
   //aktueller Monat
   $counter++;
   if (strtotime($d)>=strtotime($heute)){
+    if (strtotime($d)==strtotime($heute)){
+      ?>
+      <td style="background-color: yellow;">
+      <?php  
+    } else {
+      ?>
+      <td>
+      <?php  
+    }
     ?>
-    <td>
         <h3><?=sprintf("%02d",$i);?>
         <div style="float:right">
           <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#BearbeitenModal" data-bs-datum="<?=$d;?>">
