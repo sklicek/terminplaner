@@ -20,7 +20,7 @@ Terminplaner und Termin-Anfragesystem für die Webseite
 http://localhost/terminplaner/index.php
 
 ## Öffentliche Seite zur Terminanfrage
-![alt text](https://github.com/sklicek/terminplaner/blob/main/images/terminanfrage.jpg?raw=true)
+![Terminanfrage](https://github.com/sklicek/terminplaner/blob/main/images/terminanfrage.jpg?raw=true)
 
 ## Nicht öffentliche Seite zur Termin-Konfiguration
-![alt text](https://github.com/sklicek/terminplaner/blob/main/images/termin_konfiguration.jpg?raw=true)
+![Sprechstunden-Konfiguration](https://github.com/sklicek/terminplaner/blob/main/images/sprechstunden_konfiguration.jpg?raw=true)
