@@ -18,3 +18,6 @@ Terminplaner und Termin-Anfragesystem für die Webseite
 
 ## Starten der Webanwendung
 http://localhost/terminplaner/index.php
+
+## Öffentliche Seite zur Terminanfrage
+![alt text](https://github.com/sklicek/terminplaner/blob/main/images/terminanfrage.jpg?raw=true)
