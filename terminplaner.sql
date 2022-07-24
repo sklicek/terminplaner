@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Erstellungszeit: 20. Jul 2022 um 20:31
+-- Erstellungszeit: 24. Jul 2022 um 16:11
 -- Server-Version: 8.0.29-0ubuntu0.22.04.2
 -- PHP-Version: 8.1.2
 
@@ -42,7 +42,10 @@ CREATE TABLE `tblSprechstunden` (
 
 CREATE TABLE `tblSprechstundenDetails` (
   `id_details` int NOT NULL,
-  `id_termin` int DEFAULT NULL
+  `id_termin` int DEFAULT NULL,
+  `anfang` time DEFAULT NULL,
+  `ende` time DEFAULT NULL,
+  `reserviert` tinyint(1) NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
 --

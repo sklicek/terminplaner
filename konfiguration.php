@@ -149,18 +149,22 @@ if ($stmt = $mysqli -> prepare("SELECT id, anfang, ende, datum FROM tblSprechstu
         //var_dump($id_details);
 	   	
         if ($id_details==0){
+          $raster_mins=RASTER;
           //keine details vorhanden: erstellen
           $anz_termine=get_anz_termine($startzeit,$endzeit,RASTER);
           if ($anz_termine>0){
+            $anfangszeit=date("His",strtotime($startzeit));
             for ($x=0;$x<$anz_termine;$x++){
-              if ($stmt = $mysqli -> prepare("INSERT INTO tblSprechstundenDetails (id_termin) VALUES (?)")) {
-                  $stmt -> bind_param("i", $vorhanden);
+              $endzeit=date("His",strtotime($anfangszeit.' +'.$raster_mins.' minute'));
+              if ($stmt = $mysqli -> prepare("INSERT INTO tblSprechstundenDetails (id_termin, anfang, ende) VALUES (?,?,?)")) {
+                  $stmt -> bind_param("iss", $vorhanden,$anfangszeit,$endzeit);
                   if($stmt -> execute()) {
                   } else {
                     $msg="Fehler beim Speichern.";
                   }
                   $stmt->close();
               }
+              $anfangszeit=$endzeit;
             }	   				
           }
         } else {
