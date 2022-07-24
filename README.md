@@ -21,3 +21,6 @@ http://localhost/terminplaner/index.php
 
 ## Öffentliche Seite zur Terminanfrage
 ![alt text](https://github.com/sklicek/terminplaner/blob/main/images/terminanfrage.jpg?raw=true)
+
+## Nicht öffentliche Seite zur Termin-Konfiguration
+![alt text](https://github.com/sklicek/terminplaner/blob/main/images/termin_konfiguration.jpg?raw=true)
